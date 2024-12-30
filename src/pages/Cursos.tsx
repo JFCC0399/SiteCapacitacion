@@ -27,6 +27,9 @@ interface courses2 {
 }
 
 interface CourseJson {
+  id:number,
+  category:number,
+  sortorder:number,
    fullname:string
 }
 
@@ -83,12 +86,12 @@ const CourseCatalog: React.FC = () => {
         //const json=await connect.json()
 
         const data :CourseJson[]=await connect.json()
-        setFormatJson(data);
-        data.forEach(course => {
-          console.log('Fullname del curso:', course.fullname);
-        });
+        
       
-       // console.log(data.fullname)
+        setFormatJson(data);
+
+        // Mostrar todos los fullname de los cursos en consola
+       
         console.log("el formato del json es ",data)
 
        }catch(e){
@@ -98,7 +101,7 @@ const CourseCatalog: React.FC = () => {
        
     }
   
-    fetchData2();
+    fetchData();
   }, []);
   
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,15 +119,8 @@ const CourseCatalog: React.FC = () => {
       (selectedArea === '' || course.area === selectedArea)
     );
   }) || [];  
+ 
   
-  const filteredCourses2 = formatJson?.filter((course) => {
-    // Filtrar por el término de búsqueda (searchTerm)
-    console.log("filtrado correcto",course.fullname)
-    return (
-      (course.fullname.toLowerCase().includes(searchTerm.toLowerCase()) 
-       ) 
-    );
-  }) || [];
   
 
  
@@ -201,11 +197,21 @@ const CourseCatalog: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredCourses2.length > 0 ? (
-            filteredCourses2.map((course) => (
-              <tr key={course.fullname}>
-           
-               
+          {filteredCourses.length > 0 ? (
+            filteredCourses.map((course) => (
+              <tr key={course.id}>
+                <td style={styles.td}>{course.name}</td>
+                <td style={styles.td}>{course.description}</td>
+                <td style={styles.td}>{course.area}</td>
+                <td style={styles.td}>{course.autor}</td>
+                <td style={styles.td}>
+                  <button onClick={() => handleOpenDialog(course)} style={styles.button}>
+                    Ver
+                  </button>
+                  <button onClick={() => handleOpenEditDialog(course)} style={styles.button}>
+                    Editar
+                  </button>
+                </td>
               </tr>
             ))
           ) : (
