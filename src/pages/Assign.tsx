@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { CSSProperties } from 'react';
 import Sidebar from './Sidebar';
+import { addUSers,relation } from '../querrys/querrys';
+
 
 interface Employee {
   id: number;
@@ -13,7 +15,7 @@ interface Course {
   title: string;
   description: string;
   area: string;
-  employees: Employee[];
+  autor:string;
 }
 
 const employeesData: Employee[] = [
@@ -32,7 +34,7 @@ const CourseCatalog: React.FC = () => {
     title: '',
     description: '',
     area: '',
-    employees: [],
+    autor:'',
   });
   const [selectedArea, setSelectedArea] = useState<string>('');
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
@@ -45,26 +47,34 @@ const CourseCatalog: React.FC = () => {
   };
 
   const handleAddEmployeeToCourse = (courseId: number, employee: Employee) => {
+    /*
     setCourses((prevCourses) =>
       prevCourses.map((course) =>
         course.id === courseId
           ? { ...course, employees: [...course.employees, employee] }
           : course
       )
-    );
+    );*/
   };
 
-  const handleAddCourse = () => {
-    if (newCourse.title && newCourse.description && newCourse.area) {
-      setCourses([...courses, newCourse]);
-      setNewCourse({ id: courses.length + 1, title: '', description: '', area: '', employees: [] });
-      setSelectedArea('');
-      setFilteredEmployees([]);
-    }
-  };
+ 
+
+
+  const handleAddSupbase = async () => {
+
+    //console.log(newCourse.autor)
+     // await addUSers(newCourse.title,newCourse.description,newCourse.area,newCourse.autor)
+       // await relation()
+     
+
+    
+
+
+  }
+  
 
   const handleEmployeeSearch = (courseId: number) => {
-    if (employeeNumber) {
+   /* if (employeeNumber) {
       const foundEmployee = employeesData.find((employee) => employee.id === employeeNumber);
       if (foundEmployee) {
         handleAddEmployeeToCourse(courseId, foundEmployee);
@@ -72,107 +82,108 @@ const CourseCatalog: React.FC = () => {
       } else {
         alert('Empleado no encontrado');
       }
-    }
+    }*/
   };
 
   return (
     <div>
       <Sidebar />
-    <div style={styles.container}>
-      <h1 style={styles.heading}>Capacitación Tarahumara</h1>
-      <div style={styles.formContainer}>
-        <h2 style={styles.subHeading}>Registrar Nuevo Curso</h2>
-        <input
-          type="text"
-          placeholder="Título del curso"
-          value={newCourse.title}
-          onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
-          style={styles.input}
-        />
-        <textarea
-          placeholder="Descripción del curso"
-          value={newCourse.description}
-          onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
-          style={styles.textarea}
-        />
-        <select
-          value={newCourse.area}
-          onChange={(e) => setNewCourse({ ...newCourse, area: e.target.value })}
-          style={styles.select}
-        >
-          <option value="">Selecciona un área</option>
-          <option value="Recursos Humanos">Recursos Humanos</option>
-          <option value="Finanzas">Finanzas</option>
-          <option value="IT">IT</option>
-          <option value="Marketing">Marketing</option>
-        </select>
-        
-        <button onClick={handleAddCourse} style={styles.addButton}>
-          Agregar Curso
-        </button>
-      </div>
+      <div style={styles.container}>
+        <h1 style={styles.heading}>Capacitación Tarahumara</h1>
+        <div style={styles.formContainer}>
+          <h2 style={styles.subHeading}>Registrar Nuevo Curso</h2>
+          <input
+            type="text"
+            placeholder="Título del curso"
+            value={newCourse.title}
+            onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
+            style={styles.input}
+          />
+          <textarea
+            placeholder="Descripción del curso"
+            value={newCourse.description}
+            onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
+            style={styles.textarea}
+          />
+          <select
+            value={newCourse.area}
+            onChange={(e) => setNewCourse({ ...newCourse, area: e.target.value })}
+            style={styles.select}
+          >
+            <option value="">Selecciona un área</option>
+            <option value="Recursos Humanos">Recursos Humanos</option>
+            <option value="Finanzas">Finanzas</option>
+            <option value="IT">IT</option>
+            <option value="Marketing">Marketing</option>
+          </select>
+          <input
+            type="autor"
+            placeholder="Impartido"
+            value={newCourse.autor}
+            onChange={(e) => setNewCourse({ ...newCourse, autor: e.target.value })}
+            style={styles.input}
+          />
 
-      {courses.length > 0 && (
-        <div style={styles.courseList}>
-          <h2 style={styles.subHeading}>Cursos Registrados</h2>
-          {courses.map((course) => (
-            <div key={course.id} style={styles.courseCard}>
-              <h3>{course.title}</h3>
-              <p><strong>Descripción:</strong> {course.description}</p>
-              <p><strong>Área:</strong> {course.area}</p>
-              <div style={styles.employeeSection}>
-                <h4>Agregar Empleados al Curso</h4>
-                <div style={styles.searchContainer}>
-                  <input
-                    type="number"
-                    placeholder="Número de empleado"
-                    value={employeeNumber}
-                    onChange={(e) => setEmployeeNumber(Number(e.target.value))}
-                    style={styles.input}
-                  />
-                  <button onClick={() => handleEmployeeSearch(course.id)} style={styles.searchButton}>
-                    Buscar y agregar empleado
-                  </button>
-                </div>
-                <select
-                  value={selectedArea}
-                  onChange={(e) => handleAreaChange(e.target.value)}
-                  style={styles.select}
-                >
-                  <option value="">Selecciona un área</option>
-                  <option value="Recursos Humanos">Recursos Humanos</option>
-                  <option value="Finanzas">Finanzas</option>
-                  <option value="IT">IT</option>
-                  <option value="Marketing">Marketing</option>
-                </select>
-
-                {filteredEmployees.length > 0 && (
-                  <ul style={styles.employeeList}>
-                    {filteredEmployees.map((employee) => (
-                      <li key={employee.id} style={styles.employeeItem}>
-                        {employee.name}{' '}
-                        <button onClick={() => handleAddEmployeeToCourse(course.id, employee)} style={styles.addEmployeeButton}>
-                          Agregar
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                <h4>Empleados asignados:</h4>
-                <ul>
-                  {course.employees.map((employee) => (
-                    <li key={employee.id}>
-                      {employee.name} - {employee.area}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
+          <button onClick={handleAddSupbase} style={styles.addButton}>
+            Agregar Curso
+          </button>
         </div>
-      )}
-    </div>
+
+        {courses.length > 0 && (
+          <div style={styles.courseList}>
+            <h2 style={styles.subHeading}>Cursos Registrados</h2>
+            {courses.map((course) => (
+              <div key={course.id} style={styles.courseCard}>
+                <h3>{course.title}</h3>
+                <p><strong>Descripción:</strong> {course.description}</p>
+                <p><strong>Área:</strong> {course.area}</p>
+                <div style={styles.employeeSection}>
+                  <h4>Agregar Empleados al Curso</h4>
+                  <div style={styles.searchContainer}>
+                    <input
+                      type="number"
+                      placeholder="Número de empleado"
+                      value={employeeNumber}
+                      onChange={(e) => setEmployeeNumber(Number(e.target.value))}
+                      style={styles.input}
+                    />
+                    <button onClick={() => handleEmployeeSearch(course.id)} style={styles.searchButton}>
+                      Buscar y agregar empleado
+                    </button>
+                  </div>
+                  <select
+                    value={selectedArea}
+                    onChange={(e) => handleAreaChange(e.target.value)}
+                    style={styles.select}
+                  >
+                    <option value="">Selecciona un área</option>
+                    <option value="Recursos Humanos">Recursos Humanos</option>
+                    <option value="Finanzas">Finanzas</option>
+                    <option value="IT">IT</option>
+                    <option value="Marketing">Marketing</option>
+                  </select>
+
+                  {filteredEmployees.length > 0 && (
+                    <ul style={styles.employeeList}>
+                      {filteredEmployees.map((employee) => (
+                        <li key={employee.id} style={styles.employeeItem}>
+                          {employee.name}{' '}
+                          <button onClick={() =>handleAddSupbase()} style={styles.addEmployeeButton}>
+                            Agregar
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <h4>Empleados asignados:</h4>
+               
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

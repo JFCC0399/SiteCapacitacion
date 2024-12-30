@@ -1,47 +1,106 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { CSSProperties } from 'react';
 import Sidebar from './Sidebar';
+import { getUsers } from '../querrys/querrys';
 
 interface Employee {
   id: number;
   name: string;
   area: string;
+  autor :string;
 }
 
 interface Course {
   id: number;
-  title: string;
+  name: string;
+  description: string;
+  area: string;
+  autor :string;
+  //employees: Employee[];
+}
+interface courses2 {
+  id: number;
+  name: string;
   description: string;
   area: string;
   employees: Employee[];
 }
 
+interface CourseJson {
+   fullname:string
+}
+
+
 const employeesData: Employee[] = [
-  { id: 1, name: 'Juan Pérez', area: 'Recursos Humanos' },
-  { id: 2, name: 'Ana López', area: 'Finanzas' },
-  { id: 3, name: 'Luis Sánchez', area: 'IT' },
-  { id: 4, name: 'Marta Gómez', area: 'Marketing' },
-  { id: 5, name: 'Carlos Díaz', area: 'IT' },
-  { id: 6, name: 'Elena Martínez', area: 'Finanzas' },
+  { id: 1, name: 'Juan Pérez', area: 'Recursos Humanos',autor:"hola" },
+  { id: 2, name: 'Ana López', area: 'Finanzas',autor:"hola" },
+  { id: 3, name: 'Luis Sánchez', area: 'IT',autor:"hola"  },
+  { id: 4, name: 'Marta Gómez', area: 'Marketing' ,autor:"hola" },
+  { id: 5, name: 'Carlos Díaz', area: 'IT',autor:"hola"  },
+  { id: 6, name: 'Elena Martínez', area: 'Finanzas',autor:"hola"  },
 ];
 
 const sampleCourses: Course[] = [
-  { id: 1, title: 'Curso de Liderazgo', description: 'Desarrolla habilidades de liderazgo', area: 'Recursos Humanos', employees: [employeesData[0]] },
-  { id: 2, title: 'Introducción a Finanzas', description: 'Conceptos básicos de finanzas', area: 'Finanzas', employees: [employeesData[1], employeesData[5]] },
-  { id: 3, title: 'React para principiantes', description: 'Fundamentos de React', area: 'IT', employees: [employeesData[2], employeesData[4]] },
-  { id: 4, title: 'Marketing Digital', description: 'Estrategias de marketing en línea', area: 'Marketing', employees: [employeesData[3]] },
-  { id: 5, title: 'Big Data en IT', description: 'Análisis de grandes volúmenes de datos', area: 'IT', employees: [employeesData[2], employeesData[4]] },
+  { id: 1, name: 'Curso de Liderazgo', description: 'Desarrolla habilidades de liderazgo', area: 'Recursos Humanos' ,autor:"hola" },
+  { id: 2, name: 'Introducción a Finanzas', description: 'Conceptos básicos de finanzas', area: 'Finanzas',autor:"hola"  },
+  { id: 3, name: 'React para principiantes', description: 'Fundamentos de React', area: 'IT' ,autor:"hola" },
+  { id: 4, name: 'Marketing Digital', description: 'Estrategias de marketing en línea', area: 'Marketing',autor:"hola"  },
+  { id: 5, name: 'Big Data en IT', description: 'Análisis de grandes volúmenes de datos', area: 'IT',autor:"hola"  },
 ];
 
 const CourseCatalog: React.FC = () => {
+ 
   const [courses, setCourses] = useState<Course[]>(sampleCourses);
+  const [courses2, setCourses2] = useState<Course[]>([]);
+  const [formatJson,setFormatJson]= useState<CourseJson []>([])
+
   const [searchTerm, setSearchTerm] = useState<string>(''); // Estado para búsqueda
   const [selectedArea, setSelectedArea] = useState<string>(''); // Estado para el filtro por área
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null); // Curso seleccionado para ver información
   const [editCourse, setEditCourse] = useState<Course | null>(null); // Curso seleccionado para editar
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false); // Estado del diálogo
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false); // Estado del diálogo de edición
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const get=await getUsers();
+       
+        setCourses2(get ?? []); 
+        console.log("ay mi madre el bicho",)
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
 
+    const fetchData2=async()=>{
+      try{
+        const connect= await fetch("http://192.168.36.194:3307/allCourses") 
+        if (!connect.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        //const json=await connect.json()
+
+        const data :CourseJson[]=await connect.json()
+        setFormatJson(data);
+        data.forEach(course => {
+          console.log('Fullname del curso:', course.fullname);
+        });
+      
+       // console.log(data.fullname)
+        console.log("el formato del json es ",data)
+
+       }catch(e){
+        console.log(e)
+       }
+
+       
+    }
+  
+    fetchData2();
+  }, []);
+  
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
@@ -50,15 +109,26 @@ const CourseCatalog: React.FC = () => {
     setSelectedArea(e.target.value);
   };
 
-  const filteredCourses = courses.filter((course) => {
+  const filteredCourses = courses2?.filter((course) => {
     return (
-      (course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.description.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       course.description.toLowerCase().includes(searchTerm.toLowerCase())) &&
       (selectedArea === '' || course.area === selectedArea)
     );
-  });
+  }) || [];  
+  
+  const filteredCourses2 = formatJson?.filter((course) => {
+    // Filtrar por el término de búsqueda (searchTerm)
+    console.log("filtrado correcto",course.fullname)
+    return (
+      (course.fullname.toLowerCase().includes(searchTerm.toLowerCase()) 
+       ) 
+    );
+  }) || [];
+  
 
-  // Manejar la apertura del diálogo de información
+ 
+
   const handleOpenDialog = (course: Course) => {
     setSelectedCourse(course);
     setIsDialogOpen(true);
@@ -124,25 +194,18 @@ const CourseCatalog: React.FC = () => {
           <tr>
             <th style={styles.th}>Título</th>
             <th style={styles.th}>Descripción</th>
-            <th style={styles.th}>Área</th>
+            <th style={styles.th}>Área</th> 
+            <th style={styles.th}>impartido por</th>
             <th style={styles.th}>Acciones</th>
+           
           </tr>
         </thead>
         <tbody>
-          {filteredCourses.length > 0 ? (
-            filteredCourses.map((course) => (
-              <tr key={course.id}>
-                <td style={styles.td}>{course.title}</td>
-                <td style={styles.td}>{course.description}</td>
-                <td style={styles.td}>{course.area}</td>
-                <td style={styles.td}>
-                  <button onClick={() => handleOpenDialog(course)} style={styles.button}>
-                    Ver
-                  </button>
-                  <button onClick={() => handleOpenEditDialog(course)} style={styles.button}>
-                    Editar
-                  </button>
-                </td>
+          {filteredCourses2.length > 0 ? (
+            filteredCourses2.map((course) => (
+              <tr key={course.fullname}>
+           
+               
               </tr>
             ))
           ) : (
@@ -161,15 +224,11 @@ const CourseCatalog: React.FC = () => {
           <div style={styles.blurBackground}></div>
           <div style={styles.dialog}>
             <h2>Detalles del Curso</h2>
-            <p><strong>Título:</strong> {selectedCourse.title}</p>
+            <p><strong>Título:</strong> {selectedCourse.name}</p>
             <p><strong>Descripción:</strong> {selectedCourse.description}</p>
             <p><strong>Área:</strong> {selectedCourse.area}</p>
             <p><strong>Empleados:</strong></p>
-            <ul>
-              {selectedCourse.employees.map((employee) => (
-                <li key={employee.id}>{employee.name}</li>
-              ))}
-            </ul>
+         
             <button onClick={handleCloseDialog} style={styles.closeButton}>Cerrar</button>
           </div>
         </div>
@@ -183,8 +242,8 @@ const CourseCatalog: React.FC = () => {
             <h2>Editar Curso</h2>
             <input
               type="text"
-              value={editCourse.title}
-              onChange={(e) => setEditCourse({ ...editCourse, title: e.target.value })}
+              value={editCourse.name}
+              onChange={(e) => setEditCourse({ ...editCourse, name: e.target.value })}
               style={styles.input}
             />
             <textarea
