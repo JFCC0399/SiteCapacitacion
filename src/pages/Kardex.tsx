@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from './Sidebar';
 
 // Initial list of example courses
@@ -15,11 +15,35 @@ const availableCourses = [
   { id: 6, name: 'Rescate en Alturas', description: 'Curso sobre técnicas de rescate en alturas.', date: '11/20/2023' },
 ];
 
+interface User {
+  id: number;
+  name: string;
+  entryDate: string;
+  position: string;
+  department: string;
+  type: string;
+}
+
 // Kardex Component
 const Kardex = () => {
+  const [users, setUsers] = useState<User[]>([]);
   const [courses, setCourses] = useState(initialCourses);
   const [newCourseId, setNewCourseId] = useState<number | ''>(''); // For selected course from the dropdown
   const [dialogInfo, setDialogInfo] = useState<{ id: number; isOpen: boolean }>({ id: 0, isOpen: false });
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('http://192.168.32.6/users');
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   // Handle adding new course from the dropdown
   const handleAddCourse = () => {

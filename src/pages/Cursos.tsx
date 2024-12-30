@@ -3,107 +3,42 @@ import { CSSProperties } from 'react';
 import Sidebar from './Sidebar';
 import { getUsers } from '../querrys/querrys';
 
-interface Employee {
-  id: number;
-  name: string;
-  area: string;
-  autor :string;
-}
-
-interface Course {
-  id: number;
-  name: string;
-  description: string;
-  area: string;
-  autor :string;
-  //employees: Employee[];
-}
-interface courses2 {
-  id: number;
-  name: string;
-  description: string;
-  area: string;
-  employees: Employee[];
-}
 
 interface CourseJson {
-  id:number,
-  category:number,
-  sortorder:number,
-   fullname:string
+  id: number;
+  category: number;
+  course_name: string;
+  course_description: string; 
+  course_category: string; 
+  teacher_name: string;
 }
-
-
-const employeesData: Employee[] = [
-  { id: 1, name: 'Juan Pérez', area: 'Recursos Humanos',autor:"hola" },
-  { id: 2, name: 'Ana López', area: 'Finanzas',autor:"hola" },
-  { id: 3, name: 'Luis Sánchez', area: 'IT',autor:"hola"  },
-  { id: 4, name: 'Marta Gómez', area: 'Marketing' ,autor:"hola" },
-  { id: 5, name: 'Carlos Díaz', area: 'IT',autor:"hola"  },
-  { id: 6, name: 'Elena Martínez', area: 'Finanzas',autor:"hola"  },
-];
-
-const sampleCourses: Course[] = [
-  { id: 1, name: 'Curso de Liderazgo', description: 'Desarrolla habilidades de liderazgo', area: 'Recursos Humanos' ,autor:"hola" },
-  { id: 2, name: 'Introducción a Finanzas', description: 'Conceptos básicos de finanzas', area: 'Finanzas',autor:"hola"  },
-  { id: 3, name: 'React para principiantes', description: 'Fundamentos de React', area: 'IT' ,autor:"hola" },
-  { id: 4, name: 'Marketing Digital', description: 'Estrategias de marketing en línea', area: 'Marketing',autor:"hola"  },
-  { id: 5, name: 'Big Data en IT', description: 'Análisis de grandes volúmenes de datos', area: 'IT',autor:"hola"  },
-];
 
 const CourseCatalog: React.FC = () => {
  
-  const [courses, setCourses] = useState<Course[]>(sampleCourses);
-  const [courses2, setCourses2] = useState<Course[]>([]);
-  const [formatJson,setFormatJson]= useState<CourseJson []>([])
-
-  const [searchTerm, setSearchTerm] = useState<string>(''); // Estado para búsqueda
-  const [selectedArea, setSelectedArea] = useState<string>(''); // Estado para el filtro por área
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null); // Curso seleccionado para ver información
-  const [editCourse, setEditCourse] = useState<Course | null>(null); // Curso seleccionado para editar
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false); // Estado del diálogo
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false); // Estado del diálogo de edición
+  const [formatJson, setFormatJson] = useState<CourseJson[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedArea, setSelectedArea] = useState<string>('');
+  const [selectedCourse, setSelectedCourse] = useState<CourseJson | null>(null);
+  const [editCourse, setEditCourse] = useState<CourseJson | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
   
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const get=await getUsers();
-       
-        setCourses2(get ?? []); 
-        console.log("ay mi madre el bicho",)
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
-    const fetchData2=async()=>{
-      try{
-        const connect= await fetch("http://192.168.36.194:3307/allCourses") 
-        if (!connect.ok) {
+        const response = await fetch("http://192.168.36.155:3307/courses");
+        if (!response.ok) {
           throw new Error('Network response was not ok');
         }
-
-        //const json=await connect.json()
-
-        const data :CourseJson[]=await connect.json()
-        
-      
+        const data: CourseJson[] = await response.json();
         setFormatJson(data);
-
-        // Mostrar todos los fullname de los cursos en consola
-       
-        console.log("el formato del json es ",data)
-
-       }catch(e){
-        console.log(e)
-       }
-
-       
-    }
-  
+      } catch (e) {
+        console.error(e);
+      }
+    };
     fetchData();
   }, []);
-  
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
@@ -112,52 +47,52 @@ const CourseCatalog: React.FC = () => {
     setSelectedArea(e.target.value);
   };
 
-  const filteredCourses = courses2?.filter((course) => {
-    return (
-      (course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       course.description.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (selectedArea === '' || course.area === selectedArea)
-    );
-  }) || [];  
- 
   
+  const filteredCourses = formatJson.filter((course) => {
+    // Asegúrate de que `fullname` y `description` sean cadenas de texto
+    const fullname = course.course_name || '';  // Si no existe, asigna una cadena vacía
+    const description = course.course_description || '';  // Si no existe, asigna una cadena vacía
+  
+    // Asegúrate de que `searchTerm` sea una cadena válida
+    const term = searchTerm || '';  // Si searchTerm es undefined, usa una cadena vacía
+  
+    const matchesSearchTerm = fullname.toLowerCase().includes(term.toLowerCase()) || 
+                              description.toLowerCase().includes(term.toLowerCase());
+    
+    const matchesArea = selectedArea ? course.course_category === selectedArea : true;
+    
+    return matchesSearchTerm && matchesArea;
+  });
   
 
- 
-
-  const handleOpenDialog = (course: Course) => {
+  const handleOpenDialog = (course: CourseJson) => {
     setSelectedCourse(course);
     setIsDialogOpen(true);
   };
 
-  // Manejar el cierre del diálogo de información
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setSelectedCourse(null);
   };
 
-  // Manejar la apertura del diálogo de edición
-  const handleOpenEditDialog = (course: Course) => {
+  const handleOpenEditDialog = (course: CourseJson) => {
     setEditCourse(course);
     setIsEditDialogOpen(true);
   };
 
-  // Manejar el cierre del diálogo de edición
   const handleCloseEditDialog = () => {
     setIsEditDialogOpen(false);
     setEditCourse(null);
   };
 
-  // Guardar los cambios en la edición del curso
   const handleSaveEdit = () => {
     if (editCourse) {
-      setCourses((prevCourses) =>
-        prevCourses.map((course) =>
-          course.id === editCourse.id ? editCourse : course
-        )
-      );
-      handleCloseEditDialog();
+      // Guardar cambios en el curso editado
+      setFormatJson((prevCourses) => prevCourses.map((course) =>
+        course.id === editCourse.id ? editCourse : course
+      ));
     }
+    handleCloseEditDialog();
   };
 
   return (
@@ -197,31 +132,33 @@ const CourseCatalog: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredCourses.length > 0 ? (
-            filteredCourses.map((course) => (
-              <tr key={course.id}>
-                <td style={styles.td}>{course.name}</td>
-                <td style={styles.td}>{course.description}</td>
-                <td style={styles.td}>{course.area}</td>
-                <td style={styles.td}>{course.autor}</td>
-                <td style={styles.td}>
-                  <button onClick={() => handleOpenDialog(course)} style={styles.button}>
-                    Ver
-                  </button>
-                  <button onClick={() => handleOpenEditDialog(course)} style={styles.button}>
-                    Editar
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={4} style={styles.noResults}>
-                No se encontraron cursos.
-              </td>
-            </tr>
-          )}
-        </tbody>
+  {filteredCourses.length > 0 ? (
+    filteredCourses.map((course, index) => (
+      <tr key={course.id ? course.id : `${index}-${course.course_name}`}>
+        <td style={styles.td}>{course.course_name}</td>
+        <td style={styles.td}>{course.course_description}</td>
+        <td style={styles.td}>{course.course_category}</td>
+        <td style={styles.td}>{course.teacher_name}</td>
+        <td style={styles.td}>
+          <button onClick={() => handleOpenDialog(course)} style={styles.button}>
+            Ver
+          </button>
+          <button onClick={() => handleOpenEditDialog(course)} style={styles.button}>
+            Editar
+          </button>
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan={5} style={styles.noResults}>
+        No se encontraron cursos.
+      </td>
+    </tr>
+  )}
+</tbody>
+
+
       </table>
 
       {/* Fondo borroso y diálogo para ver la información del curso */}
@@ -230,10 +167,10 @@ const CourseCatalog: React.FC = () => {
           <div style={styles.blurBackground}></div>
           <div style={styles.dialog}>
             <h2>Detalles del Curso</h2>
-            <p><strong>Título:</strong> {selectedCourse.name}</p>
-            <p><strong>Descripción:</strong> {selectedCourse.description}</p>
-            <p><strong>Área:</strong> {selectedCourse.area}</p>
-            <p><strong>Empleados:</strong></p>
+            <p><strong>Título:</strong> {selectedCourse.course_name}</p>
+            <p><strong>Descripción:</strong> {selectedCourse.course_description}</p>
+            <p><strong>Categoria:</strong> {selectedCourse.course_category}</p>
+            <p><strong>Impartido por:</strong>{selectedCourse.teacher_name}</p>
          
             <button onClick={handleCloseDialog} style={styles.closeButton}>Cerrar</button>
           </div>
@@ -248,18 +185,18 @@ const CourseCatalog: React.FC = () => {
             <h2>Editar Curso</h2>
             <input
               type="text"
-              value={editCourse.name}
-              onChange={(e) => setEditCourse({ ...editCourse, name: e.target.value })}
+              value={editCourse.course_name}
+              onChange={(e) => setEditCourse({ ...editCourse, course_name: e.target.value })}
               style={styles.input}
             />
             <textarea
-              value={editCourse.description}
-              onChange={(e) => setEditCourse({ ...editCourse, description: e.target.value })}
+              value={editCourse.course_description}
+              onChange={(e) => setEditCourse({ ...editCourse, course_description: e.target.value })}
               style={styles.textarea}
             />
             <select
-              value={editCourse.area}
-              onChange={(e) => setEditCourse({ ...editCourse, area: e.target.value })}
+              value={editCourse.course_category}
+              onChange={(e) => setEditCourse({ ...editCourse, course_category: e.target.value })}
               style={styles.select}
             >
               <option value="Recursos Humanos">Recursos Humanos</option>
